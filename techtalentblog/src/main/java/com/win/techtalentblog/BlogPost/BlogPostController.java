@@ -1,5 +1,8 @@
 package com.win.techtalentblog.BlogPost;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,8 +15,11 @@ public class BlogPostController {
     @Autowired
     private BlogPostRepoitory blogPostRepository;
 
+    private static List<BlogPost> post = new ArrayList<>();
+
     @GetMapping
-    public String index(BlogPost blogpost) {
+    public String index(BlogPost blogpost, Model model) {
+        model.addAttribute("post", post);
         return "blogpost/index";
     }
 
