@@ -47,21 +47,52 @@ public class BlogPostController {
 
         // Add attributes to our model so we can show them to the user on the results
         // page
-        model.addAttribute("title", blogPost.getTitle());
-        model.addAttribute("author", blogPost.getAuthor());
-        model.addAttribute("blogEntry", blogPost.getBlogEntry());
+        model.addAttribute("blogPost", blogPost);
+        // model.addAttribute("title", blogPost.getTitle());
+        // model.addAttribute("author", blogPost.getAuthor());
+        // model.addAttribute("blogEntry", blogPost.getBlogEntry());
         return "blogpost/result";
     }
 
+    // Similar to @PostMapping or @GetMapping, but allows for @PathVariable
     @RequestMapping(value = "/blogposts/{id}", method = RequestMethod.GET)
-    public String editPostsWithId(@PathVariable Long id, BlogPost blogPost, Model model) {
-
+    // Spring takes whatever value is in {id} and passes it to our method params
+    // using @PathVariable
+    public String editPostWithId(@PathVariable Long id, BlogPost blogPost, Model model) {
+        // findById() returns an Optional<T> which can be null, so we have to test
         Optional<BlogPost> post = blogPostRepository.findById(id);
+        // Test if post actually has anything in it
         if (post.isPresent()) {
+            // Unwrap the post from Optional shell
             BlogPost actualPost = post.get();
             model.addAttribute("blogPost", actualPost);
         }
-
         return "blogpost/edit";
+    }
+
+    @RequestMapping(value = "/blogposts/update/{id}", method = RequestMethod.POST)
+    public String updateExistingPost(@PathVariable Long id, BlogPost blogPost, Model model) {
+        Optional<BlogPost> post = blogPostRepository.findById(id);
+        if (post.isPresent()) {
+            BlogPost actualPost = post.get();
+            actualPost.setTitle(blogPost.getTitle());
+            actualPost.setAuthor(blogPost.getAuthor());
+            actualPost.setBlogEntry(blogPost.getBlogEntry());
+            // save() is SO AWESOME that it works for both creating new posts
+            // and overwriting existing posts
+            // If the primary key of the Entity we give it matches the primary key
+            // of a record already in the database, it will save over it
+            // instead of creating a new record
+            blogPostRepository.save(actualPost);
+            model.addAttribute("blogPost", actualPost);
+        }
+
+        return "blogpost/result";
+    }
+
+    @RequestMapping(value = "blogposts/delete/{id}")
+    public String deletePostById(@PathVariable Long id, BlogPost blogPost) {
+        blogPostRepository.deleteById(id);
+        return "blogpost/delete";
     }
 }
